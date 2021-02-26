@@ -3,6 +3,7 @@
 ![Hcode Treinamentos](assets/images/calculator.png)
 
 ![Calculadora](assets/images/hcode-treinamentos.svg)
+
 Calculadora desenvolvida como exemplo do Curso Completo de JavaScript na Udemy.com.
 
 ## Projeto
@@ -245,10 +246,10 @@ Os grupos para identificá-las são:
 ```
 
 O método initButtons é o responsável por carregar todas as teclas para o JavaScript. Para isso ele usa a propriedade nativa do JS `querySelectorAll()` que está dentro do objeto document. O evento `document.querySelectorAll` seleciona todos os elementos da classe `.btn`, que corresponde a todas as teclas e armazena na variável buttons.
-Esses elementos são carregados dentro de suas tags, como pode ser visto pelo inspetor.
+Esses elementos são carregados tais quais estão dentro de suas tags, como pode ser visto pelo inspetor.
 ![querySelectorAll](assets/images/querySelectorAll.png)
 
-Como pode ser visto no exemplo no inspetor, logo abaixo, os elementos são identificados pelos seus índices que vão de 0 a 23. click drag são dois eventos distintos do mouse. O primeiro corresponde ao click do mouse e o segundo ao drag, que significa arrastar. Eles são eventos que são acionados pelo `addEventListener()`, evento nativo do JS que fica "escutando" as operações do mouse para dar uma resposta. Isso quer dizer que se o usuário clicar no botão e inadivertidamente arrastar o mouse dentro dele, a tecla desejada será acionada. Aqui nós temos um problema, porque o `addEventListener()` só consegue escutar um evento de cada vez. Para contornar esse problema, foi criado o método `addEventListenerAll()`. Veja que o método chama pelo `this.addEventListenerAll()`, passando os parâmetros necessários para ser executado. Os parâmetros que ele informa são:
+Como pode ser visto no exemplo no inspetor, logo abaixo, os elementos são identificados pelos seus índices que vão de 0 a 23. Os eventos click e drag são comandos distintos. O primeiro corresponde ao click do mouse e o segundo ao drag, que significa arrastar. Eles são eventos que são acionados pelo `addEventListener()`, evento nativo do JS que fica "escutando" as operações do mouse para dar uma resposta. Isso quer dizer que se o usuário clicar no botão e inadivertidamente arrastar o mouse dentro dele, a tecla desejada será acionada. Aqui nós temos um problema, porque o `addEventListener()` só consegue escutar um evento de cada vez. Para contornar esse problema, foi criado o método `addEventListenerAll()`. Veja que o método chama pelo `this.addEventListenerAll()`, passando os parâmetros necessários para ser executado. Os parâmetros que ele informa são:
 
 - o `btn` que é a variável contendo cada botão encontrado pelo `forEach()`, como poderá ser visto abaixo;
 - os eventos, que são o click e o drag;
@@ -266,23 +267,36 @@ Esse formato não pode ser reconhecido como um evento, pois cada nome representa
 
 Ao perceber o click, o drag ou os dois simultaneamente, aquele botão é colocado dentro do array e será acionado pelo `addEventListener()`. Na eventualidade dos dois eventos serem reconhecidos, seria produzido um resultado inesperando no display da calculadora, pois seriam considerados dois comandos e consequentemente aquela tecla seria acionada duas vezes. Para evitar possíveis erros, é passado o false que desconsidera o último evento, caso os dois fossem reconhecidos. Por fim, o parâmetro fn recebe a função que deve ser executada.
 
-O `this.addEventListenerAll()` dentro do método `initButtonsEvents()` que deu origem à execução do método, recebe o resultado do click na variável `textBtn` depois de passar por duas modificações. Para entender o que estamos falando, vamos acrescentar o método `console.log()` em duas posições, uma antes da variável `textBtn` e outra depois, conforme abaixo.
+O `this.addEventListenerAll()` dentro do método `initButtonsEvents()` que deu origem à execução do método, recebe o resultado do click na variável `btnGroup` como array. Como explicado anteriormente, os elementos, que estão no formato de string precisam ser transformados em array quando queremos trabalhar com um intem específico. Aqui nós nos interessamos pelos elementos da classe. Mais especificamente o segundo item, que faz referência aos grupos de teclas btn-calc, btn-number e btn-others. O switch nos permite classificar esses grupos para diferente finalidades que serão aplicadas posteriormente. Depois de identificados os grupos, o método `execBtn()` é invocado para dar prosseguimento ao cálculo.
 
 ```javascript
-initButtonsEvents() {
+iinitButtonsEvents() {
     let buttons = document.querySelectorAll(".btn");
     buttons.forEach((btn) => {
       this.addEventListenerAll(btn, "click drag", (e) => {
-        console.log("Antes: ", btn);
-        let textBtn = btn.innerHTML.toString();
-        console.log("Depois: ", textBtn);
-        this.displayCalc = textBtn;
+        console.log("Antes", btn);
+        let btnGroup = btn.className.split(" ");
+        console.log("Array completo", btnGroup);
+        switch (btnGroup[1]) {
+          case "btn-number":
+            let btnNumber = btn.innerHTML;
+            console.log("btnNumber:", btnNumber);
+            this.execBtn(btnNumber);
+            break;
+          case "btn-calc":
+            let btnCalc = btn.innerHTML;
+            this.execBtn(btnCalc);
+            break;
+          case "btn-others":
+            let btnOthers = btn.innerHTML;
+            this.execBtn(btnOthers);
+            break;
+        }
       });
     });
-  }
 ```
 
-Observe a palavra "Antes" e "Depois" e veja a resposta no resposta do console:
+Observe o processo de transformação no console:
 
 ![Console](assets/images/initBeforeAfter.png)
 
@@ -300,7 +314,7 @@ O conteúdo vindo do método addEventListenerAll() é uma cópia do elemento HTM
 
 ![Número 5](assets/images/fiveInnerProp.png)
 
-Este é o valor que nos interessa. Todo o resto do conteúdo será desprezado para o nosso propósito. É esse o número exibido na frente da palavra Depois no console que mostramos anteriormente e é ele quem é armazenado na variável `textBtn`, assim como qualquer outra tecla que for pressionada.
+Este é o valor que nos interessa. Todo o resto do conteúdo será desprezado para o nosso propósito.
 
 ======
 Ao receber uma tecla numérica
@@ -311,7 +325,7 @@ Se você quiser ver isso acontecendo no display da calculadora, insira o comando
 
 Até o momento, se clicarmos em qualquer tecla, já teremos uma resposta, conoforme mostrado anteriormente, mas isso não nos serve para muita coisa. Se você jogou o conteúdo das teclas para o display da calculadora como mencionado anteriormente, verá que ao clicar em cada uma delas, o conteúdo é substituído. O que nós precisamos agora é começar a definir suas funções. para que as coisas comecem a fazer sentido.
 
-O nosso conteúdo já está armazenado na variável `textBtn` e pronto para ser utilizado. Vamos então criar um novo método para dar destinos diferentes para as teclas.
+Agora, com o conteúdo da tecla já identificado pelo método addEventListenerAll, executado pelo
 
 ### Métodos execBtn() e addOperation()
 
